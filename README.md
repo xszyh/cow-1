@@ -21,4 +21,5 @@ Rule based proxy utility client
 ** [proxy](https://github.com/golang/net/tree/master/proxy)
 ** [concurrent-map](github.com/orcaman/concurrent-map)
 * Code reference
-** [](github.com/mischief/http2socks)
+** [http2socks](https://github.com/mischief/http2socks)
+** [cow](https://github.com/cyfdecyf/cow)
