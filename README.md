@@ -8,15 +8,17 @@ Rule based proxy utility client
 * BlackList mode
 
 ## Example
-`DOMAIN`: `DOMAIN,cdn.v2ex.co`
+comma-separated rule without any whitespace
 
-`IP`: `8.8.8.8`
+`DOMAIN`,`DOMAIN,cdn.v2ex.co`
 
-`IP-CIDR`: `91.108.56.0/22`
+`IP`, `8.8.8.8`
 
-`DOMAIN-SUFFI`: `googlevideo.com`
+`IP-CIDR`, `91.108.56.0/22`
 
-`DOMAIN-KEYWORD`: `twitter`
+`DOMAIN-SUFFI`, `googlevideo.com`
+
+`DOMAIN-KEYWORD`, `twitter`
 
 ## Acknowledgements
 * Dependencies
