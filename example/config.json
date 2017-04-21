@@ -1,0 +1,11 @@
+{
+  "server_addr": "x.x.x.x",
+  "local_addr": "127.0.0.1",
+  "server_port": 8080,
+  "http_port": 1080,
+  "socks_port": 1081,
+  "password": "xxxxxxx",
+  "method": "AEAD_CHACHA20_POLY1305",
+  "timeout": 60,
+  "verbose": false
+}
