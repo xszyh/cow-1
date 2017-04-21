@@ -9,9 +9,13 @@ Rule based proxy utility client
 
 ## Example
 `DOMAIN`: `DOMAIN,cdn.v2ex.co`
+
 `IP`: `8.8.8.8`
+
 `IP-CIDR`: `91.108.56.0/22`
+
 `DOMAIN-SUFFI`: `googlevideo.com`
+
 `DOMAIN-KEYWORD`: `twitter`
 
 ## Acknowledgements
