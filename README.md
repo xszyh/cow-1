@@ -23,9 +23,9 @@ comma-separated rule without any whitespace
 ## Acknowledgements
 * Dependencies
   - [go-shadowsocks2](https://github.com/shadowsocks/go-shadowsocks2)
-  - [goproxy](github.com/elazarl/goproxy)
+  - [goproxy](https://github.com/elazarl/goproxy)
   - [proxy](https://github.com/golang/proxy)
-  - [concurrent-map](github.com/orcaman/concurrent-map)
+  - [concurrent-map](https://github.com/orcaman/concurrent-map)
 * Code reference
   - [http2socks](https://github.com/mischief/http2socks)
   - [cow](https://github.com/cyfdecyf/cow)
