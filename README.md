@@ -8,7 +8,7 @@ Rule based proxy utility client
 * BlackList mode
 
 ## Example
-comma-separated rule without any whitespace
+comma-separated rules without any whitespace
 
 `DOMAIN,DOMAIN,cdn.v2ex.co`
 
