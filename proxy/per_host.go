@@ -1,14 +1,13 @@
 // Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+//go:generate safemap -k string -v Dialer -n proxy
 
 package proxy
 
 import (
 	"net"
 	"strings"
-
-	cmap "github.com/orcaman/concurrent-map"
 )
 
 // A PerHost directs connections to a default Dialer unless the hostname
@@ -16,7 +15,7 @@ import (
 type PerHost struct {
 	def, bypass Dialer
 
-	cache cmap.ConcurrentMap
+	cache *proxySafeMap
 
 	bypassCIDRs    []*net.IPNet
 	bypassIPs      []net.IP
@@ -29,7 +28,7 @@ type PerHost struct {
 // defaultDialer or bypass, depending on whether the connection matches one of
 // the configured rules.
 func NewPerHost(defaultDialer, bypass Dialer) *PerHost {
-	cache := cmap.New()
+	cache := NewproxySafeMap(nil)
 	return &PerHost{
 		def:    defaultDialer,
 		bypass: bypass,
@@ -94,7 +93,7 @@ func (p *PerHost) dialerForRequest(host string) Dialer {
 		return dialer
 	}
 
-	return d.(Dialer)
+	return d
 
 }
 
