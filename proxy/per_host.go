@@ -8,6 +8,8 @@ package proxy
 import (
 	"net"
 	"strings"
+
+	"github.com/tylertreat/BoomFilters"
 )
 
 // A PerHost directs connections to a default Dialer unless the hostname
@@ -15,7 +17,8 @@ import (
 type PerHost struct {
 	def, bypass Dialer
 
-	cache *proxySafeMap
+	directCache boom.Filter
+	proxyCache  boom.Filter
 
 	bypassCIDRs    []*net.IPNet
 	bypassIPs      []net.IP
@@ -28,11 +31,11 @@ type PerHost struct {
 // defaultDialer or bypass, depending on whether the connection matches one of
 // the configured rules.
 func NewPerHost(defaultDialer, bypass Dialer) *PerHost {
-	cache := NewproxySafeMap(nil)
 	return &PerHost{
-		def:    defaultDialer,
-		bypass: bypass,
-		cache:  cache,
+		def:         defaultDialer,
+		bypass:      bypass,
+		directCache: boom.NewDefaultStableBloomFilter(10000, 0.01),
+		proxyCache:  boom.NewDefaultStableBloomFilter(10000, 0.01),
 	}
 }
 
@@ -48,53 +51,54 @@ func (p *PerHost) Dial(network, addr string) (c net.Conn, err error) {
 }
 
 // getDialerByRule return the Dialer to use
-func (p *PerHost) getDialerByRule(host string) Dialer {
+func (p *PerHost) getDialerByRule(host string) bool {
 	for _, domains := range p.bypassDOMAINs {
 		if domains == host {
-			return p.bypass
+			return true
 		}
 	}
 
 	for _, suffix := range p.bypassSUFFIXs {
 		if strings.HasSuffix(host, suffix) {
-			return p.bypass
+			return true
 		}
 	}
 
 	for _, keyword := range p.bypassKEYWORDs {
 		if strings.Contains(host, keyword) {
-			return p.bypass
+			return true
 		}
 	}
 
 	if ip := net.ParseIP(host); ip != nil {
 		for _, bypassIP := range p.bypassIPs {
 			if bypassIP.Equal(ip) {
-				return p.bypass
+				return true
 			}
 		}
 
 		for _, net := range p.bypassCIDRs {
 			if net.Contains(ip) {
-				return p.bypass
+				return true
 			}
 		}
 	}
-	return p.def
+	return false
 }
 
 // a cache wrapper to getDialerByRule
 func (p *PerHost) dialerForRequest(host string) Dialer {
-	d, ok := p.cache.Get(host)
-
-	if !ok {
-		dialer := p.getDialerByRule(host)
-		p.cache.Set(host, dialer)
-		return dialer
+	if p.directCache.Test([]byte(host)) {
+		return p.def
+	} else if p.proxyCache.Test([]byte(host)) {
+		return p.bypass
+	} else if p.getDialerByRule(host) {
+		p.proxyCache.Add([]byte(host))
+		return p.bypass
+	} else {
+		p.directCache.Add([]byte(host))
+		return p.def
 	}
-
-	return d
-
 }
 
 // AddFromString parses a string that contains comma-separated values
