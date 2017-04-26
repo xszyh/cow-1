@@ -13,7 +13,7 @@ import (
 	"github.com/bigtan/cow/proxy"
 
 	"github.com/elazarl/goproxy"
-	"github.com/shadowsocks/go-shadowsocks2/core"
+	"github.com/riobard/go-shadowsocks2/core"
 )
 
 var settings struct {
@@ -70,7 +70,7 @@ func main() {
 	localSOCKS := fmt.Sprintf("%s:%d", settings.Local, settings.SocksPort)
 	localHTTP := fmt.Sprintf("%s:%d", settings.Local, settings.HTTPPort)
 
-	go socksLocal(localSOCKS, server, ciph)
+	go socksLocal(localSOCKS, server, ciph.StreamConn)
 
 	// setup http proxy
 	prxy := goproxy.NewProxyHttpServer()

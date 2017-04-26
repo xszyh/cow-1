@@ -8,8 +8,9 @@ package proxy
 import (
 	"net"
 	"strings"
+	"time"
 
-	"github.com/tylertreat/BoomFilters"
+	"github.com/patrickmn/go-cache"
 )
 
 // A PerHost directs connections to a default Dialer unless the hostname
@@ -17,8 +18,7 @@ import (
 type PerHost struct {
 	def, bypass Dialer
 
-	directCache boom.Filter
-	proxyCache  boom.Filter
+	proxyCache *cache.Cache
 
 	bypassCIDRs    []*net.IPNet
 	bypassIPs      []net.IP
@@ -32,10 +32,9 @@ type PerHost struct {
 // the configured rules.
 func NewPerHost(defaultDialer, bypass Dialer) *PerHost {
 	return &PerHost{
-		def:         defaultDialer,
-		bypass:      bypass,
-		directCache: boom.NewDefaultStableBloomFilter(10000, 0.01),
-		proxyCache:  boom.NewDefaultStableBloomFilter(10000, 0.01),
+		def:        defaultDialer,
+		bypass:     bypass,
+		proxyCache: cache.New(10*time.Minute, 20*time.Minute),
 	}
 }
 
@@ -88,17 +87,19 @@ func (p *PerHost) getDialerByRule(host string) bool {
 
 // a cache wrapper to getDialerByRule
 func (p *PerHost) dialerForRequest(host string) Dialer {
-	if p.directCache.Test([]byte(host)) {
-		return p.def
-	} else if p.proxyCache.Test([]byte(host)) {
-		return p.bypass
-	} else if p.getDialerByRule(host) {
-		p.proxyCache.Add([]byte(host))
-		return p.bypass
+	var dialer bool
+	if d, ok := p.proxyCache.Get(host); ok {
+		dialer = d.(bool)
 	} else {
-		p.directCache.Add([]byte(host))
-		return p.def
+		dialer = p.getDialerByRule(host)
+		p.proxyCache.Set(host, dialer, cache.DefaultExpiration)
 	}
+
+	if dialer {
+		return p.bypass
+	}
+
+	return p.def
 }
 
 // AddFromString parses a string that contains comma-separated values
