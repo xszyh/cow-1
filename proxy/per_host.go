@@ -8,9 +8,6 @@ package proxy
 import (
 	"net"
 	"strings"
-	"time"
-
-	"github.com/patrickmn/go-cache"
 )
 
 // A PerHost directs connections to a default Dialer unless the hostname
@@ -18,7 +15,7 @@ import (
 type PerHost struct {
 	def, bypass Dialer
 
-	proxyCache *cache.Cache
+	proxyCache *Map
 
 	bypassCIDRs    []*net.IPNet
 	bypassIPs      []net.IP
@@ -34,7 +31,7 @@ func NewPerHost(defaultDialer, bypass Dialer) *PerHost {
 	return &PerHost{
 		def:        defaultDialer,
 		bypass:     bypass,
-		proxyCache: cache.New(10*time.Minute, 20*time.Minute),
+		proxyCache: new(Map),
 	}
 }
 
@@ -87,15 +84,9 @@ func (p *PerHost) getDialerByRule(host string) bool {
 
 // a cache wrapper to getDialerByRule
 func (p *PerHost) dialerForRequest(host string) Dialer {
-	var dialer bool
-	if d, ok := p.proxyCache.Get(host); ok {
-		dialer = d.(bool)
-	} else {
-		dialer = p.getDialerByRule(host)
-		p.proxyCache.Set(host, dialer, cache.DefaultExpiration)
-	}
+	dialer, _ := p.proxyCache.LoadOrStore(host, p.getDialerByRule(host))
 
-	if dialer {
+	if dialer.(bool) {
 		return p.bypass
 	}
 

@@ -25,7 +25,6 @@ comma-separated rules without any whitespace
   - [go-shadowsocks2](https://github.com/shadowsocks/go-shadowsocks2)
   - [goproxy](https://github.com/elazarl/goproxy)
   - [proxy](https://github.com/golang/proxy)
-  - [go-cache](https://github.com/patrickmn/go-cache)
 * Code reference
   - [http2socks](https://github.com/mischief/http2socks)
   - [cow](https://github.com/cyfdecyf/cow)
