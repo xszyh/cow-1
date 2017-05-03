@@ -88,16 +88,17 @@ func (p *PerHost) dialerForRequest(host string) Dialer {
 	if ok {
 		if d {
 			return p.bypass
-		} else {
-			return p.def
 		}
-	} else {
-		if p.getDialerByRule(host) {
-			return p.bypass
-		} else {
-			return p.def
-		}
+		return p.def
 	}
+
+	if p.getDialerByRule(host) {
+		p.proxyCache.Set(host, true)
+		return p.bypass
+	}
+
+	p.proxyCache.Set(host, false)
+	return p.def
 }
 
 // AddFromString parses a string that contains comma-separated values
