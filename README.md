@@ -10,7 +10,7 @@ Rule based proxy utility client
 ## Example
 comma-separated rules without any whitespace
 
-`DOMAIN,DOMAIN,cdn.v2ex.co`
+`DOMAIN,cdn.v2ex.co`
 
 `IP,8.8.8.8`
 
