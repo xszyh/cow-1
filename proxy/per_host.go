@@ -1,7 +1,6 @@
 // Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-//go:generate safemap -k string -v bool -n proxy
 
 package proxy
 
@@ -15,7 +14,7 @@ import (
 type PerHost struct {
 	def, bypass Dialer
 
-	proxyCache *proxySafeMap
+	proxyCache *Map
 
 	bypassCIDRs    []*net.IPNet
 	bypassIPs      []net.IP
@@ -31,7 +30,7 @@ func NewPerHost(defaultDialer, bypass Dialer) *PerHost {
 	return &PerHost{
 		def:        defaultDialer,
 		bypass:     bypass,
-		proxyCache: NewproxySafeMap(nil),
+		proxyCache: new(Map),
 	}
 }
 
@@ -84,21 +83,14 @@ func (p *PerHost) getDialerByRule(host string) bool {
 
 // a cache wrapper to getDialerByRule
 func (p *PerHost) dialerForRequest(host string) Dialer {
-	d, ok := p.proxyCache.Get(host)
-	if ok {
-		if d {
-			return p.bypass
-		}
-		return p.def
-	}
+	d, _ := p.proxyCache.LoadOrStore(host, p.getDialerByRule(host))
 
-	if p.getDialerByRule(host) {
-		p.proxyCache.Set(host, true)
+	if d.(bool) {
 		return p.bypass
 	}
 
-	p.proxyCache.Set(host, false)
 	return p.def
+
 }
 
 // AddFromString parses a string that contains comma-separated values
