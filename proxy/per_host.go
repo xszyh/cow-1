@@ -7,6 +7,7 @@ package proxy
 import (
 	"net"
 	"strings"
+	"sync"
 )
 
 // A PerHost directs connections to a default Dialer unless the hostname
@@ -14,7 +15,7 @@ import (
 type PerHost struct {
 	def, bypass Dialer
 
-	proxyCache *Map
+	proxyCache *sync.Map
 
 	bypassCIDRs    []*net.IPNet
 	bypassIPs      []net.IP
@@ -30,7 +31,7 @@ func NewPerHost(defaultDialer, bypass Dialer) *PerHost {
 	return &PerHost{
 		def:        defaultDialer,
 		bypass:     bypass,
-		proxyCache: new(Map),
+		proxyCache: new(sync.Map),
 	}
 }
 
