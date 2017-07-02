@@ -1,13 +1,12 @@
-// Copyright 2011 The Go Authors. All rights reserved.
+// Package proxy Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-
+// go:generate safemap -k string -v bool -n proxy
 package proxy
 
 import (
 	"net"
 	"strings"
-	"sync"
 )
 
 // A PerHost directs connections to a default Dialer unless the hostname
@@ -15,7 +14,7 @@ import (
 type PerHost struct {
 	def, bypass Dialer
 
-	proxyCache *sync.Map
+	proxyCache *StringBoolMap
 
 	bypassCIDRs    []*net.IPNet
 	bypassIPs      []net.IP
@@ -31,7 +30,7 @@ func NewPerHost(defaultDialer, bypass Dialer) *PerHost {
 	return &PerHost{
 		def:        defaultDialer,
 		bypass:     bypass,
-		proxyCache: new(sync.Map),
+		proxyCache: NewStringBoolMap(),
 	}
 }
 
@@ -84,14 +83,18 @@ func (p *PerHost) getDialerByRule(host string) bool {
 
 // a cache wrapper to getDialerByRule
 func (p *PerHost) dialerForRequest(host string) Dialer {
-	d, _ := p.proxyCache.LoadOrStore(host, p.getDialerByRule(host))
+	value, exists := p.proxyCache.GetEx(host)
 
-	if d.(bool) {
+	if !exists {
+		value = p.getDialerByRule(host)
+		p.proxyCache.Set(host, value)
+	}
+
+	if value {
 		return p.bypass
 	}
 
 	return p.def
-
 }
 
 // AddFromString parses a string that contains comma-separated values
