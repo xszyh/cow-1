@@ -13,7 +13,7 @@ import (
 	"github.com/bigtan/cow/proxy"
 
 	"github.com/elazarl/goproxy"
-	"github.com/shadowsocks/go-shadowsocks2/core"
+	"github.com/riobard/go-shadowsocks2/core"
 )
 
 var settings struct {
