@@ -36,7 +36,7 @@ func main() {
 	}
 
 	flag.StringVar(&flags.Config, "c", "config.json", "file name of config file")
-	flag.StringVar(&flags.Blocked, "b", "blocked.txt", "file name of config file")
+	flag.StringVar(&flags.Blocked, "b", "blocked.txt", "file name of blocked file")
 	flag.Parse()
 
 	// init logger
