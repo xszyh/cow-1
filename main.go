@@ -58,8 +58,7 @@ func main() {
 	}
 
 	// setup shadowsocks client
-	var key []byte
-	ciph, err := core.PickCipher(settings.Method, key, settings.Password)
+	ciph, err := core.PickCipher(settings.Method, nil, settings.Password)
 
 	if err != nil {
 		logger.Fatal("No such cipher", err.Error())
