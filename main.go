@@ -96,7 +96,7 @@ func main() {
 		}
 	}
 
-	prxy.Tr = &http.Transport{Dial: perHost.Dial}
+	prxy.Tr = &http.Transport{Dial: perHost.Dial, Proxy: nil}
 
 	logger.Fatal(http.ListenAndServe(localHTTP, prxy))
 }
