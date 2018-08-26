@@ -24,7 +24,6 @@ var settings struct {
 	SocksPort  int    `json:"socks_port"`
 	Password   string `json:"password"`
 	Method     string `json:"method"`
-	Timeout    int    `json:"timeout"`
 	Verbose    bool   `json:"verbose"`
 }
 
