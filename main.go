@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"crypto/tls"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -34,8 +33,6 @@ func main() {
 		Config  string
 		Blocked string
 	}
-
-	var tlsClientSkipVerify = &tls.Config{InsecureSkipVerify: true}
 
 	flag.StringVar(&flags.Config, "c", "config.json", "file name of config file")
 	flag.StringVar(&flags.Blocked, "b", "blocked.txt", "file name of blocked file")
@@ -75,18 +72,15 @@ func main() {
 
 	// setup http proxy
 	prxy := goproxy.NewProxyHttpServer()
-
 	prxy.Logger = logger
+	prxy.ConnectDial = nil
 	prxy.Verbose = settings.Verbose
-	prxy.ConnectDial = proxy.Direct.Dial
 
 	// proxy bypass to localSOCKS
 	bypass, _ := proxy.SOCKS5("tcp", localSOCKS, nil, proxy.Direct)
 
 	// setup per_host
 	perHost := proxy.NewPerHost(proxy.Direct, bypass)
-
-	prxy.Tr = &http.Transport{Dial: perHost.Dial, Proxy: nil, TLSClientConfig: tlsClientSkipVerify}
 
 	file, err := os.Open(flags.Blocked)
 	if err != nil {
@@ -101,6 +95,8 @@ func main() {
 			perHost.AddFromString(rule)
 		}
 	}
+
+	prxy.Tr = &http.Transport{Dial: perHost.Dial, Proxy: nil}
 
 	logger.Fatal(http.ListenAndServe(localHTTP, prxy))
 }
