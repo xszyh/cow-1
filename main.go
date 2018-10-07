@@ -12,7 +12,6 @@ import (
 
 	"github.com/bigtan/cow/proxy"
 
-	"github.com/elazarl/goproxy"
 	"github.com/shadowsocks/go-shadowsocks2/core"
 )
 
@@ -70,12 +69,6 @@ func main() {
 
 	go socksLocal(localSOCKS, server, ciph.StreamConn)
 
-	// setup http proxy
-	prxy := goproxy.NewProxyHttpServer()
-	prxy.Logger = logger
-	prxy.ConnectDial = nil
-	prxy.Verbose = settings.Verbose
-
 	// proxy bypass to localSOCKS
 	bypass, _ := proxy.SOCKS5("tcp", localSOCKS, nil, proxy.Direct)
 
@@ -96,7 +89,5 @@ func main() {
 		}
 	}
 
-	prxy.Tr = &http.Transport{Dial: perHost.Dial, Proxy: nil}
-
-	logger.Fatal(http.ListenAndServe(localHTTP, prxy))
+	logger.Fatal(http.ListenAndServe(localHTTP, &proxy.HTTPProxyHandler{Dialer: perHost}))
 }
